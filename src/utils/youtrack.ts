@@ -3,6 +3,11 @@ import { GitHubIssue, GitHubIssueState, YouTrackIssue, YouTrackIssueState } from
 import axios, { AxiosError } from "axios";
 dotenv.config();
 
+interface Project {
+  id: string;
+  name: string;
+}
+
 const YOUTRACK_BASE_URL = process.env.YOUTRACK_BASE_URL;
 const YOUTRACK_API_KEY = process.env.YOUTRACK_API_KEY;
 
@@ -36,7 +41,7 @@ const mapGitHubToYouTrackState = (state: GitHubIssueState): YouTrackIssueState =
 };
 
 const fetchStateFieldId = async (projectId: string): Promise<string | null> => {
-  // Check cache first
+
   if (stateFieldCache.has(projectId)) {
     return stateFieldCache.get(projectId)!;
   }
@@ -64,20 +69,12 @@ const fetchStateFieldId = async (projectId: string): Promise<string | null> => {
     return statusFieldId;
 
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("Error fetching custom fields:", {
-        status: error.response?.status,
-        message: error.message,
-        data: error.response?.data
-      });
-    } else {
-      console.error("Error fetching custom fields:", error);
-    }
+    console.error("Error fetching custom fields:", error);
     return null;
   }
 };
 
-const createIssue = async (issue: GitHubIssue, projectId: string): Promise<YouTrackIssue | null> => {
+const createYouTrackIssue = async (issue: GitHubIssue, projectId: string): Promise<YouTrackIssue | null> => {
   const customFields = [];
   
   if (issue.state !== "open") {
@@ -114,23 +111,30 @@ const createIssue = async (issue: GitHubIssue, projectId: string): Promise<YouTr
       description: response.data.description
     } as YouTrackIssue;
     
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("Error creating YouTrack issue:", {
-        status: error.response?.status,
-        message: error.message,
-        data: error.response?.data,
-        issue: issue.title
-      });
-    } else {
-      console.error("Error creating YouTrack issue:", error);
-    }
+  } catch (error) {    
+    console.error("Error creating YouTrack issue:", error);
     return null;
   }
 };
 
-const fetchProjects = async () => {
+const fetchYouTrackProjects = async (): Promise<Project[]> => {
+  const endpoint = `${YOUTRACK_BASE_URL}/api/admin/projects?fields=id,name`;
 
+  try {
+    const response = await axios.get<Project[]>(endpoint, { headers });
+    
+    if (!response?.data || !Array.isArray(response.data))
+      return [];
+
+    return response.data.map((project) => ({
+      id: project.id,
+      name: project.name
+    }));
+    
+  } catch (error) {
+    console.error("Error while fetching project list:", error);
+    return [];
+  }
 }
 
-export { createIssue };
+export { createYouTrackIssue, fetchYouTrackProjects };

@@ -27,8 +27,7 @@ const mapGitHubToYouTrackState = (state) => {
             throw new Error(`Unknown GitHubIssueState: ${state}`);
     }
 };
-export const fetchStateFieldId = async (projectId) => {
-    // Check cache first
+const fetchStateFieldId = async (projectId) => {
     if (stateFieldCache.has(projectId)) {
         return stateFieldCache.get(projectId);
     }
@@ -61,7 +60,7 @@ export const fetchStateFieldId = async (projectId) => {
         return null;
     }
 };
-const createIssue = async (issue, projectId) => {
+const createYouTrackIssue = async (issue, projectId) => {
     const customFields = [];
     if (issue.state !== "open") {
         const stateFieldId = await fetchStateFieldId(projectId);
@@ -94,18 +93,24 @@ const createIssue = async (issue, projectId) => {
         };
     }
     catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error("Error creating YouTrack issue:", {
-                status: error.response?.status,
-                message: error.message,
-                data: error.response?.data,
-                issue: issue.title
-            });
-        }
-        else {
-            console.error("Error creating YouTrack issue:", error);
-        }
+        console.error("Error creating YouTrack issue:", error);
         return null;
     }
 };
-export { createIssue };
+const fetchYouTrackProjects = async () => {
+    const endpoint = `${YOUTRACK_BASE_URL}/api/admin/projects?fields=id,name`;
+    try {
+        const response = await axios.get(endpoint, { headers });
+        if (!response?.data || !Array.isArray(response.data))
+            return [];
+        return response.data.map((project) => ({
+            id: project.id,
+            name: project.name
+        }));
+    }
+    catch (error) {
+        console.error("Error while fetching project list:", error);
+        return [];
+    }
+};
+export { createYouTrackIssue, fetchYouTrackProjects };
