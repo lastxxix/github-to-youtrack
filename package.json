@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "octokit": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
+  }
+}
