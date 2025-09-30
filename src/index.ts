@@ -1,5 +1,5 @@
 
-import { question, rl } from "./config/config.js";
+import { question, rl, yt, gh } from "./config/config.js";
 import { GitHubClient } from "./github/github-client.js";
 import { RepoMapping } from "./models/mapping.js";
 import { convertGitHubIssueToYouTrack } from "./utils/parser.js";
@@ -9,10 +9,15 @@ import { YouTrackClient } from "./youtrack/youtrack-client.js";
 async function promptUserForMappings(): Promise<RepoMapping[]> {
     const mappings: RepoMapping[] = [];
     while (true) {
-        const githubRepo = await question('Enter GitHub repo (org/repo, leave empty to finish): ');
+        const githubRepo = await question('Enter GitHub repo (e.g. org/repo, leave empty to start migration): ');
         if (!githubRepo) break;
-        const youtrackProjectId = await question('Enter YouTrack projectId: ');
-        const autoSync = await question('Do you want to enable automatic sync? (y/n): ');
+        console.log("Fetching YouTrack projects...");
+        const projects = await yt.fetchProjects();
+        projects.forEach(project => {
+            console.log(`${project.id}: ${project.name}`);
+        });
+        const youtrackProjectId = await question('Enter YouTrack projectId from the list above (e.g. 0-1): ');
+        const autoSync = await question('Do you want to enable automatic sync for this repo? (y/n): ');
         if (autoSync.toLowerCase() === 'y') {
             mappings.push({ githubRepo, youtrackProjectId, lastUpdate: new Date().toISOString() });
         } else {
@@ -23,8 +28,7 @@ async function promptUserForMappings(): Promise<RepoMapping[]> {
 }
 
 const main = async () => {
-    const gh = new GitHubClient();
-    const yt = new YouTrackClient();
+
     const mappings = await promptUserForMappings();
 
     for (const { githubRepo, youtrackProjectId } of mappings) {
@@ -40,7 +44,6 @@ const main = async () => {
                 console.log("Adding comment to issue", issue.number);
                 const comments = await gh.fetchComments(githubRepo, issue.number);
                 for (const comment of comments) {
-                    console.log("Comment:", comment);
                     const added = await yt.addCommentToIssue(created!.id, comment);
                     if (added) {
                         console.log(`Added comment ${comment.id} to YouTrack issue ${created!.id}`);

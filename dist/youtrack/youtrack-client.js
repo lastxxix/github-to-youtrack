@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import axios from "axios";
 import { YOUTRACK_API_KEY, YOUTRACK_BASE_URL } from "../config/config.js";
-import { convertGitHubIssueToYouTrack } from "../utils/mapper.js";
+import { convertGitHubIssueToYouTrack, mapToYouTrackIssue } from "../utils/parser.js";
 dotenv.config();
 export class YouTrackClient {
     baseUrl;
@@ -18,29 +18,12 @@ export class YouTrackClient {
             }
         });
     }
-    mapToYouTrackIssue(data) {
-        return {
-            id: data.id,
-            summary: data.summary,
-            description: data.description,
-            author: data.author?.name || "Unknown",
-            project: {
-                id: data.project?.id,
-                name: data.project?.name
-            },
-            customFields: data.customFields?.map((cf) => ({
-                name: cf.name,
-                value: cf.value?.name || cf.value || null
-            })) || []
-        };
-    }
     async createIssue(issue, projectId) {
         try {
             const issueData = convertGitHubIssueToYouTrack(issue, projectId);
-            console.log("Creating YouTrack issue with data:", issueData);
             const response = await this.axiosClient.post(`/issues?fields=id,summary,description,project(id,name),customFields(name,value(name))`, issueData);
             if (response.status === 200 || response.status === 201) {
-                return this.mapToYouTrackIssue(response.data);
+                return mapToYouTrackIssue(response.data);
             }
             console.log("Successfully created YouTrack issue.");
         }
@@ -52,6 +35,7 @@ export class YouTrackClient {
             else {
                 console.error("Unexpected Error:", error);
             }
+            process.exit(1);
         }
         return null;
     }

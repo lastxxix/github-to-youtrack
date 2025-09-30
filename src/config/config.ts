@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 import { Octokit } from 'octokit';
 import * as readline from "readline";
+import { GitHubClient } from '../github/github-client.js';
+import { YouTrackClient } from '../youtrack/youtrack-client.js';
 
 dotenv.config();
 
@@ -37,3 +39,7 @@ export const question = (prompt: string): Promise<string> => {
     });
   });
 };
+
+
+export const gh = new GitHubClient();
+export const yt = new YouTrackClient();

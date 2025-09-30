@@ -5,7 +5,9 @@ GitHub to YouTrack is a tool that synchronizes issues from GitHub repositories t
 
 ## Disclaimer
 
-The current implementation uses a polling mechanism to check for updates at regular intervals when auto-sync is enabled. Although using GitHub webhooks would be more efficient by updating issues only on events, this approach requires that the GitHub repository user has administrative privileges or the necessary permissions to create webhooks. Therefore, polling is used specifically for automatic synchronization.
+The current implementation uses a polling mechanism to check for updates at regular intervals when auto-sync is enabled. Although using GitHub webhooks would be more efficient by updating issues only on events, this approach requires the GitHub repository user to have administrative privileges or the necessary permissions to create webhooks. Therefore, polling is used specifically for automatic synchronization.
+
+Additionally, by default, closed issues on GitHub are also imported.
 
 ## Getting Started
 

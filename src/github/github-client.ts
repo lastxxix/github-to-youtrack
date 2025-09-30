@@ -3,6 +3,7 @@ import { Octokit, App } from "octokit";
 import { all } from "axios";
 import { GITHUB_API_KEY } from "../config/config.js";
 import { GitHubComment, GitHubIssue, GitHubIssueState, GitHubUser } from "../models/github.js";
+import { mapGitHubComment, mapGitHubIssue, parseGitHubUrl } from "../utils/parser.js";
 dotenv.config();
 
 export class GitHubClient {
@@ -10,58 +11,6 @@ export class GitHubClient {
 
     constructor() {
         this.octokit = new Octokit({ auth: GITHUB_API_KEY });
-    }
-
-    private parseGitHubUrl(url: string): { owner: string; repo: string } | null {
-        url = url.trim();
-        url = url.replace(/\.git$/, '');
-
-        const sshMatch = url.match(/git@github\.com:([^/]+)\/(.+)/);
-        if (sshMatch) {
-            return { owner: sshMatch[1], repo: sshMatch[2] };
-        }
-
-        const httpsMatch = url.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([^/]+)\/([^/]+)/);
-        if (httpsMatch) {
-            return { owner: httpsMatch[1], repo: httpsMatch[2] };
-        }
-
-        const simpleMatch = url.match(/^([^/]+)\/([^/]+)$/);
-        if (simpleMatch) {
-            return { owner: simpleMatch[1], repo: simpleMatch[2] };
-        }
-        
-        return null;  
-    }
-
-    private async mapIssue(issue: any): Promise<GitHubIssue> {
-      
-        let assignee: GitHubUser | undefined = undefined;
-
-        if(issue.assignee) {
-            assignee = await this.fetchUser(issue.assignee);
-        }
-        
-        return {
-            id: issue.id,
-            number: issue.number,
-            title: issue.title,
-            description: issue.body,
-            state: issue.state as GitHubIssueState,
-            comments: issue.comments,
-            assignee: assignee,
-        };
-    }
-
-    private async mapComment(comment: any): Promise<GitHubComment> {
-        const author = await this.fetchUser(comment.user);
-        return {
-            id: comment.id,
-            body: comment.body,
-            author: author,
-            createdAt: comment.created_at,
-            updatedAt: comment.updated_at
-        };
     }
 
     private async fetchUser(userData: any): Promise<GitHubUser | undefined> {
@@ -85,7 +34,7 @@ export class GitHubClient {
     }
 
     public async fetchComments(repoUrl:string, issueNumber: number): Promise<GitHubComment[]> {
-        const parsed = this.parseGitHubUrl(repoUrl);
+        const parsed = parseGitHubUrl(repoUrl);
         if(!parsed) {
             throw new Error("Invalid GitHub repository URL: " + repoUrl);
         }
@@ -103,7 +52,7 @@ export class GitHubClient {
                     page: page,
                     per_page: perPage
                 });
-                const mappedComments = await Promise.all(response.data.map(comment => this.mapComment(comment)));
+                const mappedComments = await Promise.all(response.data.map(async comment => mapGitHubComment(comment, await this.fetchUser(comment.user))));
                 comments.push(...mappedComments);
                 hasMore = response.data.length === perPage;
                 page++;
@@ -116,7 +65,7 @@ export class GitHubClient {
     }
 
     public async fetchIssues(repoUrl: string, since?: string): Promise<GitHubIssue[]> {
-        const parsed = this.parseGitHubUrl(repoUrl);
+        const parsed = parseGitHubUrl(repoUrl);
         if(!parsed) {
             throw new Error("Invalid GitHub repository URL: " + repoUrl);
         }
@@ -141,7 +90,10 @@ export class GitHubClient {
                     return !issue.pull_request;
                 }));
 
-                const mappedIssues = await Promise.all(pageIssues.map(issue => this.mapIssue(issue)));
+                const mappedIssues = await Promise.all(pageIssues.map(async issue => {
+                    const assignee = issue.assignee ? await this.fetchUser(issue.assignee) : undefined;
+                    return mapGitHubIssue(issue, assignee);
+                }));
                 allIssues.push(...mappedIssues);
                 hasMore = githubResponse.data.length === perPage;
                 page++;

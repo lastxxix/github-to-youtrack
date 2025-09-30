@@ -4,7 +4,7 @@ import axios, { AxiosError, AxiosInstance } from "axios";
 import { YOUTRACK_API_KEY, YOUTRACK_BASE_URL } from "../config/config.js";
 import { YouTrackIssue, YouTrackProject } from "../models/youtrack.js";
 import { GitHubComment, GitHubIssue } from "../models/github.js";
-import { convertGitHubIssueToYouTrack } from "../utils/parser.js";
+import { convertGitHubIssueToYouTrack, mapToYouTrackIssue } from "../utils/parser.js";
 dotenv.config();
 
 export class YouTrackClient {
@@ -25,22 +25,7 @@ export class YouTrackClient {
    
   }
 
-  private mapToYouTrackIssue(data: any): YouTrackIssue {
-    return {
-        id: data.id,
-        summary: data.summary,
-        description: data.description,
-        author: data.author?.name || "Unknown",
-        project: {
-            id: data.project?.id,
-            name: data.project?.name
-        },
-        customFields: data.customFields?.map((cf: any) => ({
-            name: cf.name,
-            value: cf.value?.name || cf.value || null
-        })) || []
-    };
-  } 
+
 
   public async createIssue(issue: GitHubIssue, projectId: string): Promise<YouTrackIssue | null> {
       try {
@@ -51,16 +36,18 @@ export class YouTrackClient {
           );
 
           if (response.status === 200 || response.status === 201) {
-              return this.mapToYouTrackIssue(response.data);
+              return mapToYouTrackIssue(response.data);
           }
           console.log("Successfully created YouTrack issue.");
       } catch (error) {
           if (axios.isAxiosError(error)) {
               const axiosError = error as AxiosError;
               console.error("YouTrack API Error:", axiosError.response?.data || axiosError.message);
+              
           } else {
               console.error("Unexpected Error:", error);
           }
+          process.exit(1);
       }
       return null;
   }
