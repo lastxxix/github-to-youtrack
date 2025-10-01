@@ -25,6 +25,9 @@ const main = async () => {
     await syncService.performInitialMigration(mappings);
     
     console.log('\n✅ Migration completed!');
+
+
+
     rl.close();
 };
 

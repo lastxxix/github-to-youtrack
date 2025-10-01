@@ -2,7 +2,6 @@
 
 GitHub to YouTrack is a tool that synchronizes issues from GitHub repositories to YouTrack projects. It not only retrieves GitHub issues and their associated comments to create corresponding YouTrack issues but also supports an **automatic synchronization mode** that keeps issues updated over time.
 
-
 ## Disclaimer
 
 The current implementation uses a polling mechanism to check for updates at regular intervals when auto-sync is enabled. Although using GitHub webhooks would be more efficient by updating issues only on events, this approach requires the GitHub repository user to have administrative privileges or the necessary permissions to create webhooks. Therefore, polling is used specifically for automatic synchronization.
@@ -14,6 +13,7 @@ Additionally, by default, closed issues on GitHub are also imported.
 1. **Clone the repository.**
 
 2. **Install dependencies:**
+
     ```sh
     npm install
     ```
@@ -24,26 +24,63 @@ Additionally, by default, closed issues on GitHub are also imported.
     - `YOUTRACK_API_KEY`
     - `YOUTRACK_BASE_URL`
     - `GITHUB_API_KEY`
-    - `SYNC_INTERVAL_SECONDS` (Optional; default is 7200 seconds or 2 hours)
+    - `MAPPING_FILE` (optional, path to a JSON file for issue mappings, default is `mappings.json`)
 
 4. **Build the Project:**
+
     ```sh
     npm run build
     ```
 
 5. **Run the Application:**
+
+The application can be started in different modes:
+
+- **Start both services (default):**
+
     ```sh
     npm start
     ```
 
+    This will first run the **migrate** process and then start the **sync daemon** automatically.
+
+- **Run only the migrate process:**
+
+    ```sh
+    npm run migrate
+    ```
+
+    Use this if you only want to update/migrate data.
+
+- **Start only the sync daemon:**
+
+    ```sh
+    npm run sync
+    ```
+
+    **Note:** The sync daemon should only be started after running the migrate process, otherwise it may not work correctly.
+
 ## Usage
 
-Upon startup, the application will prompt you for:
-- The GitHub repository.
-- The corresponding YouTrack project ID.
-- Whether to enable automatic synchronization.
+Upon startup, the application will prompt you to configure repository mappings. For each mapping, you will provide:
 
-- **Automatic Sync:**  
-  If auto-sync is enabled, the application will periodically poll GitHub for issue updates based on the interval specified in the `SYNC_INTERVAL_SECONDS` environment variable (or a value entered at runtime). This ensures that issues remain updated without manual intervention.
-- **Manual Sync:**  
-  If auto-sync is not enabled, the tool will perform a one-time synchronization when run.
+1. **GitHub repository** – Enter the repository in the format `org/repo`. Leave empty to stop adding mappings.
+2. **YouTrack project ID** – Select the corresponding project from the list fetched from YouTrack.
+3. **Automatic synchronization** – Choose whether to enable automatic sync:
+   - If **yes**, you will be prompted to set the sync interval in minutes (default is 5, maximum is 1440).
+   - If **no**, the repository will be mapped without automatic syncing.
+
+Example workflow:
+
+```sh
+Enter GitHub repo (e.g. org/repo, leave empty to continue): my-org/my-repo
+Fetching YouTrack projects...
+1: Project Alpha
+2: Project Beta
+Enter YouTrack projectId: 1
+Enable automatic sync? (y/n): y
+Sync interval in minutes (default: 5, max: 1440): 10
+
+Enter GitHub repo (e.g. org/repo, leave empty to continue): 
+# Done adding mappings
+```

@@ -14,8 +14,7 @@ export async function promptUserForMappings() {
         const autoSync = await question('Enable automatic sync? (y/n): ');
         if (autoSync.toLowerCase() === 'y') {
             const intervalInput = await question('Sync interval in minutes (default: 5, max: 1440): ');
-            const syncIntervalMinutes = Math.min(Math.max(parseInt(intervalInput) || 5, 1), 1440 // max 24 ore
-            );
+            const syncIntervalMinutes = Math.min(Math.max(parseInt(intervalInput) || 5, 1), 1440);
             mappings.push({
                 githubRepo,
                 youtrackProjectId,

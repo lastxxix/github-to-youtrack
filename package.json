@@ -2,7 +2,8 @@
   "scripts": {
     "build": "tsc",
     "migrate": "npm run build && node dist/index.js",
-    "sync": "npm run build && node dist/sync-daemon.js"
+    "sync": "npm run build && node dist/sync-daemon.js",
+    "start": "npm run build && npm run migrate && npm run sync"
   },
   "dependencies": {
     "axios": "^1.12.2",
