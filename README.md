@@ -21,10 +21,25 @@ Additionally, by default, closed issues on GitHub are also imported.
 3. **Configure Environment Variables:**
 
     Copy `.env.example` to `.env` and fill in the required values:
-    - `YOUTRACK_API_KEY`
-    - `YOUTRACK_BASE_URL`
-    - `GITHUB_API_KEY`
-    - `MAPPING_FILE` (optional, path to a JSON file for issue mappings, default is `mappings.json`)
+
+    - **`YOUTRACK_API_KEY`** – YouTrack API token.  
+        To generate it:
+        1. Log in to your YouTrack account.
+        2. Go to **Profile > Account Security**.
+        3. Click **New token**, give it a name and select the necessary permissions (at least `Read Projects` and `Create Issues`).
+        4. Copy the generated token and paste it here.
+
+    - **`YOUTRACK_BASE_URL`** – The base URL of your YouTrack instance.  
+        For YouTrack Cloud, the format is:  
+        `https://<your-instance>.youtrack.cloud`
+        For self-hosted YouTrack, it is the URL where your YouTrack server is accessible.
+
+    - **`GITHUB_API_KEY`** – GitHub personal access token.  
+        To generate it:
+        1. Go to [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens).
+        2. Click **Generate new token (classic)**, select the scopes you need (at least `repo`), and copy the token.
+
+    - **`MAPPING_FILE`** (optional) – Path to a JSON file where repository-to-project mappings are stored. Default is `mappings.json`.
 
 4. **Build the Project:**
 
@@ -34,31 +49,31 @@ Additionally, by default, closed issues on GitHub are also imported.
 
 5. **Run the Application:**
 
-The application can be started in different modes:
+    The application can be started in different modes:
 
-- **Start both services (default):**
+    - **Start both services (default):**
 
-    ```sh
-    npm start
-    ```
+        ```sh
+        npm start
+        ```
 
-    This will first run the **migrate** process and then start the **sync daemon** automatically.
+        This will first run the **migrate** process and then start the **sync daemon** automatically.
 
-- **Run only the migrate process:**
+    - **Run only the migrate process:**
 
-    ```sh
-    npm run migrate
-    ```
+        ```sh
+        npm run migrate
+        ```
 
-    Use this if you only want to update/migrate data.
+        Use this if you only want to update/migrate data.
 
-- **Start only the sync daemon:**
+    - **Start only the sync daemon:**
 
-    ```sh
-    npm run sync
-    ```
+        ```sh
+        npm run sync
+        ```
 
-    **Note:** The sync daemon should only be started after running the migrate process, otherwise it may not work correctly.
+        **Note:** The sync daemon should only be started after running the migrate process, otherwise it may not work correctly.
 
 ## Usage
 
