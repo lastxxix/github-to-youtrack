@@ -22,7 +22,8 @@ Additionally, by default, closed issues on GitHub are also imported.
 
     Copy `.env.example` to `.env` and fill in the required values:
 
-    - **`YOUTRACK_API_KEY`** – YouTrack API token.  
+    - **`YOUTRACK_API_KEY`** – YouTrack API token.
+
         To generate it:
         1. Log in to your YouTrack account.
         2. Go to **Profile > Account Security**.
@@ -79,7 +80,7 @@ Additionally, by default, closed issues on GitHub are also imported.
 
 Upon startup, the application will prompt you to configure repository mappings. For each mapping, you will provide:
 
-1. **GitHub repository** – Enter the repository in the format `org/repo`. Leave empty to stop adding mappings.
+1. **GitHub repository** – Enter the repository in the format `org/repo` or `https://github.com/org/repo`. Leave empty to stop adding mappings.
 2. **YouTrack project ID** – Select the corresponding project from the list fetched from YouTrack.
 3. **Automatic synchronization** – Choose whether to enable automatic sync:
    - If **yes**, you will be prompted to set the sync interval in minutes (default is 5, maximum is 1440).
@@ -88,7 +89,7 @@ Upon startup, the application will prompt you to configure repository mappings. 
 Example workflow:
 
 ```sh
-Enter GitHub repo (e.g. org/repo, leave empty to continue): my-org/my-repo
+Enter GitHub repo (e.g. org/repo or url, leave empty to continue): my-org/my-repo
 Fetching YouTrack projects...
 1: Project Alpha
 2: Project Beta
@@ -97,5 +98,4 @@ Enable automatic sync? (y/n): y
 Sync interval in minutes (default: 5, max: 1440): 10
 
 Enter GitHub repo (e.g. org/repo, leave empty to continue): 
-# Done adding mappings
 ```

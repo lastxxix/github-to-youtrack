@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import * as readline from "readline";
 import { GitHubClient } from '../github/github-client.js';
 import { YouTrackClient } from '../youtrack/youtrack-client.js';
+import { SyncService } from '../services/sync.js';
 dotenv.config();
 export const GITHUB_API_KEY = process.env.GITHUB_API_KEY || '';
 export const YOUTRACK_API_KEY = process.env.YOUTRACK_API_KEY || '';
@@ -33,3 +34,4 @@ export const question = (prompt) => {
 };
 export const gh = new GitHubClient();
 export const yt = new YouTrackClient();
+export const ss = new SyncService();

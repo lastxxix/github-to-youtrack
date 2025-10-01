@@ -1,8 +1,8 @@
-import { question, yt } from "../config/config.js";
+import { question, ss, yt } from "../config/config.js";
 import { RepoMapping } from "../models/mapping.js";
 
 export async function promptUserForMappings(): Promise<RepoMapping[]> {
-    const mappings: RepoMapping[] = [];
+    const mappings = await ss.loadMappings();
     
     while (true) {
         const githubRepo = await question('Enter GitHub repo (e.g. org/repo, leave empty to continue): ');
