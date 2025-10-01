@@ -4,15 +4,14 @@ import { YouTrackCreateIssue, YouTrackIssue, YouTrackProject } from "../models/y
 export function convertGitHubIssueToYouTrack(issue: GitHubIssue, projectId: string): YouTrackCreateIssue {
     return {
         project: { id: projectId },
-        summary: issue.title,
+        summary: `#${issue.number} ${issue.title}`,
         description: issue.description || "",
         customFields: [
             {
                 name: "State",
                 value: { name: issue.state === "open" ? "To Do" : "Done" },
                 $type: "StateIssueCustomField"
-            },
-
+            }
         ]
     };
 }

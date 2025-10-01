@@ -33,7 +33,7 @@ export class GitHubClient {
         return undefined;
     }
 
-    public async fetchComments(repoUrl:string, issueNumber: number): Promise<GitHubComment[]> {
+    public async fetchComments(repoUrl:string, issueNumber: number, since?: string): Promise<GitHubComment[]> {
         const parsed = parseGitHubUrl(repoUrl);
         if(!parsed) {
             throw new Error("Invalid GitHub repository URL: " + repoUrl);
@@ -50,7 +50,8 @@ export class GitHubClient {
                     repo: repo,
                     issue_number: issueNumber,
                     page: page,
-                    per_page: perPage
+                    per_page: perPage,
+                    since: since
                 });
                 const mappedComments = await Promise.all(response.data.map(async comment => mapGitHubComment(comment, await this.fetchUser(comment.user))));
                 comments.push(...mappedComments);

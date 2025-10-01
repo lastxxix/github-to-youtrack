@@ -21,11 +21,11 @@ export class YouTrackClient {
     async createIssue(issue, projectId) {
         try {
             const issueData = convertGitHubIssueToYouTrack(issue, projectId);
-            const response = await this.axiosClient.post(`/issues?fields=id,summary,description,project(id,name),customFields(name,value(name))`, issueData);
+            const response = await this.axiosClient.post(`/issues?fields=id,shortName,summary,description,project(id,name),customFields(name,value(name))`, issueData);
             if (response.status === 200 || response.status === 201) {
+                console.log("Successfully created YouTrack issue.");
                 return mapToYouTrackIssue(response.data);
             }
-            console.log("Successfully created YouTrack issue.");
         }
         catch (error) {
             if (axios.isAxiosError(error)) {
@@ -61,11 +61,14 @@ export class YouTrackClient {
         let success = false;
         try {
             const commentData = {
-                text: comment.body,
+                /*
+                WAS WORKING UNTIL 01/10/2025 then YouTrack changed something. Previously it was generating a new user automatically.
                 author: {
                     login: comment.author?.login || "unknown",
                     fullName: comment.author?.name || "Unknown User"
-                }
+                },
+                */
+                text: comment.body
             };
             const response = await this.axiosClient.post(`/issues/${issueId}/comments`, commentData);
             if (response.status === 200 || response.status === 201) {
@@ -81,7 +84,64 @@ export class YouTrackClient {
             else {
                 console.error("Unexpected Error:", error);
             }
+            process.exit(1);
         }
         return success;
+    }
+    async updateIssue(oldIssue, newIssue) {
+        try {
+            const updatedFields = {};
+            if (oldIssue.summary !== newIssue.summary) {
+                updatedFields.summary = newIssue.summary;
+            }
+            if (oldIssue.description !== newIssue.description) {
+                updatedFields.description = newIssue.description;
+            }
+            //Check custom field state
+            const oldStateField = oldIssue.customFields.find(cf => cf.name === "State");
+            const newStateField = newIssue.customFields.find(cf => cf.name === "State");
+            if (oldStateField?.value?.name !== newStateField?.value?.name) {
+                updatedFields.customFields = newIssue.customFields;
+            }
+            if (Object.keys(updatedFields).length > 0) {
+                const response = await this.axiosClient.post(`/issues/${oldIssue.id}?fields=id,summary,description,project(id,name),customFields(name,value(name))`, updatedFields);
+                if (response.status === 200) {
+                    console.log("Successfully updated YouTrack issue.");
+                    return mapToYouTrackIssue(response.data);
+                }
+            }
+            return oldIssue;
+        }
+        catch (error) {
+            if (axios.isAxiosError(error)) {
+                const axiosError = error;
+                console.error("YouTrack API Error:", axiosError.response?.data || axiosError.message);
+            }
+            else {
+                console.error("Unexpected Error:", error);
+            }
+        }
+        return null;
+    }
+    async findIssue(githubIssueNumber, projectId) {
+        try {
+            const response = await this.axiosClient.get(`/issues?fields=id,summary,description,project(id,name),customFields(name,value(name))`);
+            if (response.status === 200 && response.data.length > 0) {
+                const matchingIssue = response.data.find(issue => issue.summary?.startsWith(`#${githubIssueNumber}`));
+                if (matchingIssue) {
+                    return mapToYouTrackIssue(matchingIssue);
+                }
+            }
+        }
+        catch (error) {
+            if (axios.isAxiosError(error)) {
+                const axiosError = error;
+                console.error("YouTrack API Error:", axiosError.response?.data || axiosError.message);
+            }
+            else {
+                console.error("Unexpected Error:", error);
+            }
+        }
+        return null;
     }
 }

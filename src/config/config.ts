@@ -9,7 +9,7 @@ dotenv.config();
 export const GITHUB_API_KEY = process.env.GITHUB_API_KEY || '';
 export const YOUTRACK_API_KEY = process.env.YOUTRACK_API_KEY || '';
 export const YOUTRACK_BASE_URL = process.env.YOUTRACK_BASE_URL || '';
-export const SYNC_INTERVAL_SECONDS = process.env.SYNC_INTERVAL_SECONDS ? parseInt(process.env.SYNC_INTERVAL_SECONDS) : 60 * 120;
+export const MAPPINGS_FILE = process.env.SYNC_MAPPINGS_FILE || 'mappings.json';
 
 if (!YOUTRACK_BASE_URL || !YOUTRACK_BASE_URL.trim()) {
     console.error('ERROR: missing YOUTRACK_BASE_URL environment variable. Set it and try again.');
