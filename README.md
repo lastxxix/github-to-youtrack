@@ -18,6 +18,8 @@ Additionally, by default, closed issues on GitHub are also imported.
 }
 ```
 
+As a result, any new comment will now appear as created by the account associated with the YouTrack API key used for synchronization.
+
 ## Getting Started
 
 1. **Clone the repository.**
