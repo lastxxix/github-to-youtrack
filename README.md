@@ -8,7 +8,7 @@ The current implementation uses a polling mechanism to check for updates at regu
 
 Additionally, by default, closed issues on GitHub are also imported.
 
-**Important Update**: Until yesterday (30/09), creating comments with the author on YouTrack worked without needing to pre-create the user in YouTrack. As of today, this no longer works. Attempting to create a comment without the corresponding YouTrack user ID now results in the following error:
+**Important Update**: Until yesterday (30/09/2025), creating comments with the author on YouTrack worked without needing to pre-create the user in YouTrack. As of today, this no longer works. Attempting to create a comment without the corresponding YouTrack user ID now results in the following error:
 
 ```ts
 {
